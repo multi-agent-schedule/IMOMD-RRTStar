@@ -121,3 +121,6 @@ main
 *.osm
 node*.csv
 *command_history.csv
+.vscode
+/cmake-build-debug-wsl/
+.idea
