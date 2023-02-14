@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(src)
 include_directories(include)
+LINK_LIBRARIES(pthread)
 
 add_executable(app
         main.cpp
