@@ -90,9 +90,10 @@ BiAstar::BiAstar(size_t source, size_t target, std::vector<size_t> objectives,
         {
             std::string date = bipedlab::utils::getTimeNDate();
             std::string path = bipedlab::utils::getCurrentDirectory();
-
-            command_csv_.open(std::string(path) + "/../../../src/IMOMD-RRT/experiments/BI_Astar_" + 
-                              date + "_command_history.csv");
+            std::string csv_path = std::string(path) + "/BI_Astar_" +
+                                   date + "_command_history.csv";
+            bipedlab::debugger::debugColorOutput("[Bi-A*] csv_path: ", csv_path, 10, BC);
+            command_csv_.open(csv_path);
 
             // Header
             command_csv_ << "CPU_time" << "path_cost" << "tree_size" << endrow;
@@ -231,8 +232,8 @@ void BiAstar::expandTreeLayers_()
 
 void BiAstar::expandTree_(tree_bi_astar_t& tree)
 {
-    bipedlab::debugger::debugColorOutput("[Bi-A*] Expand from Start : ", tree.start_root, 2, BG);
-    bipedlab::debugger::debugColorOutput("[Bi-A*] Expand from Goal : ", tree.goal_root, 2, BG);
+    bipedlab::debugger::debugColorOutput("[Bi-A*] Expand from Start : ", tree.start_root, 8, BG);
+    bipedlab::debugger::debugColorOutput("[Bi-A*] Expand from Goal : ", tree.goal_root, 8, BG);
     
     size_t connection_node;
 
@@ -264,7 +265,7 @@ void BiAstar::expandTree_(tree_bi_astar_t& tree)
                 tree.cost_forward[x_near.first] = new_cost;
                 tree.parent_forward[x_near.first] = state;
 
-                double new_f_value = new_cost + 
+                double new_f_value = new_cost + 0.0*
                     computeHaversineDistance((*map_ptr_)[x_near.first], (*map_ptr_)[tree.goal_root]);
 
                 tree.open_queue_forward.push(std::make_pair(-new_f_value, x_near.first));
@@ -295,7 +296,8 @@ void BiAstar::expandTree_(tree_bi_astar_t& tree)
                 tree.cost_backward[x_near.first] = new_cost;
                 tree.parent_backward[x_near.first] = state;
 
-                double new_f_value = new_cost + 
+                // change bi Astar to bi dij
+                double new_f_value = new_cost + 0.0*
                     computeHaversineDistance((*map_ptr_)[x_near.first], (*map_ptr_)[tree.start_root]);
 
                 tree.open_queue_backward.push(std::make_pair(-new_f_value, x_near.first));
@@ -452,14 +454,17 @@ void BiAstar::solveRTSP_()
 
     if (is_connected_graph_ && is_distance_matrix_updated_)
     {
+        bipedlab::debugger::debugColorOutput("biastar eci_gen_solver_ ", "is_connected_graph_ and is_distance_matrix_updated_", 8);
         if (!setting_.pseudo_mode)
         {
+            bipedlab::debugger::debugColorOutput("biastar eci_gen_solver_ ", "solveRTSP", 8);
             std::tie(path_cost, tmp_sequence) = 
             eci_gen_solver_.solveRTSP(getDistanceMatrix(),
                 source_tree_id_, target_tree_id_);
         }
         else
         {
+            bipedlab::debugger::debugColorOutput("biastar eci_gen_solver_ ", "solveDijkstra", 8);
             std::tie(path_cost, tmp_sequence) = 
             eci_gen_solver_.solveDijkstra(getDistanceMatrix(),
                 source_tree_id_, target_tree_id_);

@@ -1,14 +1,14 @@
 general:
   system: 1     # 0: IMOMD-RRT;  1: Bidirectional A*;  2: ANA*
-  pseudo: 1     # 0: real-objectives mode;  1: pseudo-objectives mode
+  pseudo: 0     # 0: real-objectives mode;  1: pseudo-objectives mode
   log_data: 1   # 0: don't log;             1: log data
   print_path: 1 # 0: don't print;           1: print path (sequence of node_id)
   max_iter: 1000000
   max_time: 60 # Sec
 
 rrt_params:
-  goal_bias: 1.0 # 0.0 ~ 1.0
-  random_seed: 0 # 0: Fixed random_seed; 1: use random random_seed
+  goal_bias: 0.3 # 0.0 ~ 1.0
+  random_seed: 1 # 0: Fixed random_seed; 1: use random random_seed
 
 destinations:
   ## sanfrancisco_bugtrap (Pseudo-mode)
@@ -17,13 +17,13 @@ destinations:
   # target_id: 560879
 
   ## Seattle
-  source_id: 1
-  objective_ids: []
-  target_id: 2
+  source_id: 2
+  objective_ids: [2, 3, 4, 5, 6, 7, 8,9,10,11] # [2, 3, 4, 5, 6, 7, 8,9,10,11,12,13,14,15,16,17,187,28,29,30,100]
+  target_id: 1000
 
 map:
   type: 1 # < 0: customized map number; 0: customized graph, 1: osm
-  path: ~/Projects/IMOMD-RRTStar/osm_data/
+  path:  /mnt/d/Projects/IMOMD-RRTStar/osm_data/
   name: sanf.osm # seattle.osm
 
 rtsp_settings:
@@ -31,7 +31,7 @@ rtsp_settings:
   swapping: 1  # 0: No Execute,  1: Execute
   genetic:  1  # 0: No Execute,  1: Execute
   ga:
-    random_seed: 0 # 0: Fixed random_seed; 1: use random random_seed
+    random_seed: 1 # 0: Fixed random_seed; 1: use random random_seed
     mutation_iter: 10000
     population: 1000
     generation: 5

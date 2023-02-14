@@ -209,8 +209,10 @@ ImomdRRT::ImomdRRT(size_t source, size_t target, std::vector<size_t> objectives,
             std::string date = bipedlab::utils::getTimeNDate();
             std::string path = bipedlab::utils::getCurrentDirectory();
 
-            command_csv_.open(std::string(path) + "/../../../src/IMOMD-RRT/experiments/IMOMD_" + 
-                              date + "_command_history.csv");
+            std::string csv_path =  std::string(path) + "/IMOMD_" +
+                                   date + "_command_history.csv";
+            bipedlab::debugger::debugColorOutput("[IMOMD] csv_path: ", csv_path, 10, BC);
+            command_csv_.open(csv_path);
 
             // Header
             command_csv_ << "CPU_time" << "path_cost" << "tree_size" << endrow;

@@ -371,7 +371,8 @@ void Driver::publishShortestPathToRviz_(std::shared_ptr<std::vector<size_t>> pat
         p.x = (*converted_map_ptr_)[node_id].x;
         p.y = (*converted_map_ptr_)[node_id].y;
         p.z = 10;
-
+//        bipedlab::debugger::debugColorOutput("[shortest_path_pub_]",
+//                                             node_id, 10, BR, BOLD);
         line_strip.points.push_back(p);
     }
     shortest_path_pub_.publish(line_strip);
