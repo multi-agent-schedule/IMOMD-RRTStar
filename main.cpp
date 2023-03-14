@@ -80,7 +80,7 @@ int main()
     else if (map_type == 0)
     {
         bipedlab::debugger::debugColorTextOutput(
-            "[main] Write your own parser " 
+            "[main] Write your own parser "
             "to parse your own map to our graph strucure.", 10, BC);
 
         bipedlab::debugger::debugColorOutput(
@@ -161,12 +161,12 @@ int main()
                 tree["destinations"]["source_id"].val()));
     size_t target = std::stoi(bipedlab::yaml_utils::convertToStr(
                 tree["destinations"]["target_id"].val()));
-    std::vector<size_t> objectives = 
+    std::vector<size_t> objectives =
         bipedlab::yaml_utils::convertToVector<size_t>(tree["destinations"]["objective_ids"]);
 
     bipedlab::debugger::debugColorOutput("[main] Source: ", source, 10, BC);
     bipedlab::debugger::debugColorOutput("[main] Target: ", target, 10, BC);
-    bipedlab::debugger::debugColorContainerOutput("[main] Objectives: ", objectives, 
+    bipedlab::debugger::debugColorContainerOutput("[main] Objectives: ", objectives,
                                                   10, BC);
 
     // rrt parameters and settings
@@ -199,7 +199,7 @@ int main()
 
     setting.rtsp_setting.ga_random_seed = std::stoi(bipedlab::yaml_utils::convertToStr(
                                     tree["rtsp_settings"]["ga"]["random_seed"].val()));
-    
+
     setting.rtsp_setting.ga_mutation_iter = std::stoi(bipedlab::yaml_utils::convertToStr(
                                     tree["rtsp_settings"]["ga"]["mutation_iter"].val()));
 
@@ -208,6 +208,34 @@ int main()
 
     setting.rtsp_setting.ga_generation = std::stoi(bipedlab::yaml_utils::convertToStr(
                                     tree["rtsp_settings"]["ga"]["generation"].val()));
+
+    //////////////////
+    /// code with me
+    pthread_t metid[2];
+    /////////////////
+#if 1
+    BiAstar bi_astar(source, target, objectives, raw_map, graph, setting);
+    if (flag_print_path)
+    {
+        pthread_create(&metid[1], NULL, BiAstar::printPath, &bi_astar);
+    }
+    BiAstar::findShortestPath(&bi_astar);
+
+#elif 1
+    //////////////////////////////////////////////////
+
+    ImomdRRT imomt(source, target, objectives, raw_map, graph, setting);
+    if (flag_print_path)
+    {
+        pthread_create(&metid[1], NULL, ImomdRRT::printPath, &imomt);
+    }
+    ImomdRRT::findShortestPath(&imomt);
+
+#endif
+    ////////////////
+    /// finish
+    exit(0);
+    ///////////////
 
     // call the algorithm
     pthread_t tid[2];
@@ -227,10 +255,10 @@ int main()
             }
 
             pthread_join(tid[0], NULL);
-            
+
             if (flag_print_path)
             {
-                pthread_join(tid[1], NULL); 
+                pthread_join(tid[1], NULL);
             }
 
             exit(0);
@@ -241,17 +269,17 @@ int main()
 
             bipedlab::debugger::debugTitleTextOutput("[main]", "Bi-A* running", 10, BG);
             pthread_create(&tid[0], NULL, BiAstar::findShortestPath, &bi_astar);
-            
+
             if (flag_print_path)
             {
                 pthread_create(&tid[1], NULL, BiAstar::printPath, &bi_astar);
             }
 
             pthread_join(tid[0], NULL);
-            
+
             if (flag_print_path)
             {
-                pthread_join(tid[1], NULL); 
+                pthread_join(tid[1], NULL);
             }
 
             exit(0);
@@ -268,10 +296,10 @@ int main()
             }
 
             pthread_join(tid[0], NULL);
-            
+
             if (flag_print_path)
             {
-                pthread_join(tid[1], NULL); 
+                pthread_join(tid[1], NULL);
             }
 
             exit(0);

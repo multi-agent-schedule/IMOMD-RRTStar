@@ -1,5 +1,5 @@
 general:
-  system: 0     # 0: IMOMD-RRT;  1: Bidirectional A*;  2: ANA*
+  system: 1     # 0: IMOMD-RRT;  1: Bidirectional A*;  2: ANA*
   pseudo: 0     # 0: real-objectives mode;  1: pseudo-objectives mode
   log_data: 1   # 0: don't log;             1: log data
   print_path: 1 # 0: don't print;           1: print path (sequence of node_id)
