@@ -48,12 +48,12 @@
 #include "yaml/yaml_utils.h"
 
 #define RYML_SINGLE_HDR_DEFINE_NOW
+
 #include "yaml/yaml.h"
 
 int DEBUG_LEVEL = 10;
 
-int main()
-{
+int main() {
     // load algorithm_config
     std::string contents = bipedlab::yaml_utils::getFileContents(
             "config/algorithm_config.yaml");
@@ -63,75 +63,69 @@ int main()
     bipedlab::debugger::debugColorTextOutput(
             "[main] Building/Loading the map", 10, BC);
     int map_type = std::stoi(bipedlab::yaml_utils::convertToStr(
-                    tree["map"]["type"].val()));
+            tree["map"]["type"].val()));
 
     std::shared_ptr<std::vector<location_t>> raw_map;
     std::shared_ptr<std::vector<std::unordered_map<size_t, double>>> graph;
 
-    if (map_type < 0)
-    {
+    if (map_type < 0) {
         bipedlab::debugger::debugColorOutput(
                 "[main] Using customized prebuilt map: ", map_type, 10, BC);
         auto fake_map = FakeMap(map_type);
 
         raw_map = fake_map.getMap();
         graph = fake_map.getGraph();
-    }
-    else if (map_type == 0)
-    {
+    } else if (map_type == 0) {
         bipedlab::debugger::debugColorTextOutput(
-            "[main] Write your own parser "
-            "to parse your own map to our graph strucure.", 10, BC);
+                "[main] Write your own parser "
+                "to parse your own map to our graph strucure.", 10, BC);
 
         bipedlab::debugger::debugColorOutput(
-            "Please take a look at fake_map.h for example", map_type, 10, BC);
+                "Please take a look at fake_map.h for example", map_type, 10, BC);
         exit(0);
 
-    }
-    else if (map_type == 1)
-    {
+    } else if (map_type == 1) {
         bipedlab::debugger::debugColorOutput(
                 "[main] Loading OpenStreetMap: ", map_type, 10, BC);
 
         // Get OSM file
         std::string map_path = bipedlab::yaml_utils::convertToStr(
-                            tree["map"]["path"].val());
+                tree["map"]["path"].val());
         std::string map_file = bipedlab::yaml_utils::convertToStr(
-                            tree["map"]["name"].val());
+                tree["map"]["name"].val());
 
         // filtering OSM Way Type
         map_properties_t map_properties;
         std::string osm_config = bipedlab::yaml_utils::getFileContents(
-            "config/osm_way_config.yaml");
+                "config/osm_way_config.yaml");
         ryml::Tree osm_config_tree = ryml::parse_in_arena(ryml::to_csubstr(osm_config));
 
         int filter = 0;
         filter = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                osm_config_tree["osm_show_ways"].val()));
+                osm_config_tree["osm_show_ways"].val()));
 
-        switch (filter)
-        {
+        switch (filter) {
             case 0:
                 map_properties.key = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_all"]["key"]);
+                        osm_config_tree["osm_all"]["key"]);
                 break;
             case 1:
                 map_properties.key = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_cars"]["key"]);
+                        osm_config_tree["osm_cars"]["key"]);
                 map_properties.value = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_cars"]["value"]);
+                        osm_config_tree["osm_cars"]["value"]);
                 break;
             case 2:
                 map_properties.key = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_walkers"]["key"]);
+                        osm_config_tree["osm_walkers"]["key"]);
                 map_properties.value = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_walkers"]["value"]);
+                        osm_config_tree["osm_walkers"]["value"]);
                 break;
             case 3:
                 map_properties.key = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_cyclists"]["key"]);
+                        osm_config_tree["osm_cyclists"]["key"]);
                 map_properties.value = bipedlab::yaml_utils::convertToUnorderedSet<std::string>(
-                                        osm_config_tree["osm_cyclists"]["value"]);
+                        osm_config_tree["osm_cyclists"]["value"]);
                 break;
             default:
                 throw std::invalid_argument("Invalid OSM Type variable! Check config file!");
@@ -142,27 +136,25 @@ int main()
 
         raw_map = osm_parser.getMap();
         graph = osm_parser.getConnection();
-    }
-    else
-    {
+    } else {
         throw std::invalid_argument("Invalid Map Type variable! Check config file!");
     }
     // End assiging map & graph
 
     // Assign Algorithm (IMOMD vs. BaseLine)
     int system = std::stoi(bipedlab::yaml_utils::convertToStr(
-                tree["general"]["system"].val()));
+            tree["general"]["system"].val()));
 
     int flag_print_path = std::stoi(bipedlab::yaml_utils::convertToStr(
-                tree["general"]["print_path"].val()));
+            tree["general"]["print_path"].val()));
 
     // assign source, target, and objectives as indices
     size_t source = std::stoi(bipedlab::yaml_utils::convertToStr(
-                tree["destinations"]["source_id"].val()));
+            tree["destinations"]["source_id"].val()));
     size_t target = std::stoi(bipedlab::yaml_utils::convertToStr(
-                tree["destinations"]["target_id"].val()));
+            tree["destinations"]["target_id"].val()));
     std::vector<size_t> objectives =
-        bipedlab::yaml_utils::convertToVector<size_t>(tree["destinations"]["objective_ids"]);
+            bipedlab::yaml_utils::convertToVector<size_t>(tree["destinations"]["objective_ids"]);
 
     bipedlab::debugger::debugColorOutput("[main] Source: ", source, 10, BC);
     bipedlab::debugger::debugColorOutput("[main] Target: ", target, 10, BC);
@@ -173,41 +165,41 @@ int main()
     imomd_setting_t setting;
 
     setting.max_iter = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["general"]["max_iter"].val()));
+            tree["general"]["max_iter"].val()));
 
     setting.max_time = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["general"]["max_time"].val()));
+            tree["general"]["max_time"].val()));
 
     setting.pseudo_mode = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["general"]["pseudo"].val()));
+            tree["general"]["pseudo"].val()));
 
     setting.log_data = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["general"]["log_data"].val()));
+            tree["general"]["log_data"].val()));
 
     setting.goal_bias = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rrt_params"]["goal_bias"].val()));
+            tree["rrt_params"]["goal_bias"].val()));
 
     setting.random_seed = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rrt_params"]["random_seed"].val()));
+            tree["rrt_params"]["random_seed"].val()));
 
     // RTSP Solver Settings
     setting.rtsp_setting.swapping = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["swapping"].val()));
+            tree["rtsp_settings"]["swapping"].val()));
 
     setting.rtsp_setting.genetic = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["genetic"].val()));
+            tree["rtsp_settings"]["genetic"].val()));
 
     setting.rtsp_setting.ga_random_seed = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["ga"]["random_seed"].val()));
+            tree["rtsp_settings"]["ga"]["random_seed"].val()));
 
     setting.rtsp_setting.ga_mutation_iter = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["ga"]["mutation_iter"].val()));
+            tree["rtsp_settings"]["ga"]["mutation_iter"].val()));
 
     setting.rtsp_setting.ga_population = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["ga"]["population"].val()));
+            tree["rtsp_settings"]["ga"]["population"].val()));
 
     setting.rtsp_setting.ga_generation = std::stoi(bipedlab::yaml_utils::convertToStr(
-                                    tree["rtsp_settings"]["ga"]["generation"].val()));
+            tree["rtsp_settings"]["ga"]["generation"].val()));
 
     //////////////////
     /// code with me
@@ -215,8 +207,7 @@ int main()
     /////////////////
 #if 1
     BiAstar bi_astar(source, target, objectives, raw_map, graph, setting);
-    if (flag_print_path)
-    {
+    if (flag_print_path) {
         pthread_create(&metid[1], NULL, BiAstar::printPath, &bi_astar);
     }
     BiAstar::findShortestPath(&bi_astar);
@@ -240,65 +231,55 @@ int main()
     // call the algorithm
     pthread_t tid[2];
 
-    switch (system)
-    {
-        case 0:
-        {
+    switch (system) {
+        case 0: {
             ImomdRRT imomt(source, target, objectives, raw_map, graph, setting);
 
             bipedlab::debugger::debugTitleTextOutput("[main]", "IMOMD running", 10, BG);
             pthread_create(&tid[0], NULL, ImomdRRT::findShortestPath, &imomt);
 
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_create(&tid[1], NULL, ImomdRRT::printPath, &imomt);
             }
 
             pthread_join(tid[0], NULL);
 
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_join(tid[1], NULL);
             }
 
             exit(0);
         }
-        case 1:
-        {
+        case 1: {
             BiAstar bi_astar(source, target, objectives, raw_map, graph, setting);
 
             bipedlab::debugger::debugTitleTextOutput("[main]", "Bi-A* running", 10, BG);
             pthread_create(&tid[0], NULL, BiAstar::findShortestPath, &bi_astar);
 
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_create(&tid[1], NULL, BiAstar::printPath, &bi_astar);
             }
 
             pthread_join(tid[0], NULL);
 
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_join(tid[1], NULL);
             }
 
             exit(0);
         }
-        case 2:
-        {
+        case 2: {
             ANAStar ana_star(source, target, objectives, raw_map, graph, setting);
 
             bipedlab::debugger::debugTitleTextOutput("[main]", "ANA* running", 10, BG);
             pthread_create(&tid[0], NULL, ANAStar::findShortestPath, &ana_star);
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_create(&tid[1], NULL, ANAStar::printPath, &ana_star);
             }
 
             pthread_join(tid[0], NULL);
 
-            if (flag_print_path)
-            {
+            if (flag_print_path) {
                 pthread_join(tid[1], NULL);
             }
 
