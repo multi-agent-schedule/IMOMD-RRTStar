@@ -9,6 +9,8 @@ osm_all:
     - footway
     - sidewalk
     - cycleway
+    - power
+    - location
 
 osm_cars:
   value:

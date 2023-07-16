@@ -179,37 +179,6 @@ std::shared_ptr<std::vector<size_t>> BiAstar::getShortestPath()
     return shortest_path_ptr;
 }
 
-void* BiAstar::printPath(void* arg)
-{
-    BiAstar* this_local = static_cast<BiAstar*>(arg);
-
-    int count = 0;
-    while (!this_local->reached_max_iter_)
-    {
-        pthread_mutex_lock(&this_local->lock_);
-
-        // Wait for path update or termination of getShortestPath
-        while (!this_local->is_path_updated_ && !this_local->reached_max_iter_)
-        {  
-            pthread_cond_wait(&this_local->cond_get_path_, &this_local->lock_);
-        }
-
-        // Export the shortest path
-        bipedlab::debugger::debugTitleTextOutput("[main]", 
-                "print path: " + std::to_string(count++), 10, BG);
-        for (auto node : this_local->shortest_path_)
-        {
-            std::cout << node << " -> ";
-        }
-        std::cout << "#" << std::endl;
-
-        this_local->is_path_updated_ = false;
-        pthread_mutex_unlock(&this_local->lock_);
-    }
-    
-    pthread_exit(NULL);
-}
-
 void BiAstar::expandTreeLayers_()
 {
     static std::uniform_int_distribution<> uni_tree(0, (int)tree_layers_.size() - 1);
@@ -224,6 +193,7 @@ void BiAstar::expandTreeLayers_()
     unexplored_tree_.erase(tree_id);
 }
 
+//TODO
 void BiAstar::expandTree_(tree_bi_astar_t& tree)
 {
     bipedlab::debugger::debugColorOutput("[Bi-A*] Expand from Start : ", tree.start_root, 3, BG);
@@ -354,6 +324,85 @@ void BiAstar::connectTwoTree_(int tree1_id, int tree2_id)
         disjoint_set_parent_.end(), disjoint_set_parent_.begin());
 }
 
+std::shared_ptr<std::vector<std::vector<double>>> BiAstar::getDistanceMatrix()
+{
+    return std::make_shared<std::vector<std::vector<double>>>(distance_matrix_);
+};
+
+void BiAstar::solveRTSP_()
+{
+    double path_cost = 0;
+    std::shared_ptr<std::vector<int>> tmp_sequence;
+
+    if (is_connected_graph_ && is_distance_matrix_updated_)
+    {
+        if (!setting_.pseudo_mode)
+        {
+            std::tie(path_cost, tmp_sequence) = 
+            eci_gen_solver_.solveRTSP(getDistanceMatrix(),
+                source_tree_id_, target_tree_id_);
+        }
+        else
+        {
+            std::tie(path_cost, tmp_sequence) = 
+            eci_gen_solver_.solveDijkstra(getDistanceMatrix(),
+                source_tree_id_, target_tree_id_);
+        }
+        
+        // Update path and cost
+        if (path_cost < shortest_path_cost_)
+        {
+            sequence_of_tree_id_rtsp_ = tmp_sequence;
+            shortest_path_cost_ = path_cost;
+            // updatePath_();
+            // logData_();
+        }
+        else
+        {
+            bipedlab::debugger::debugColorOutput("Not found the shorter path than ", path_cost, 8);
+        }
+    }
+}
+
+// ##########################
+// 下面是debug用的function
+// ##########################
+
+
+/// @brief  只是打印path
+/// @param arg 
+/// @return 
+void* BiAstar::printPath(void* arg)
+{
+    BiAstar* this_local = static_cast<BiAstar*>(arg);
+
+    int count = 0;
+    while (!this_local->reached_max_iter_)
+    {
+        pthread_mutex_lock(&this_local->lock_);
+
+        // Wait for path update or termination of getShortestPath
+        while (!this_local->is_path_updated_ && !this_local->reached_max_iter_)
+        {  
+            pthread_cond_wait(&this_local->cond_get_path_, &this_local->lock_);
+        }
+
+        // Export the shortest path
+        bipedlab::debugger::debugTitleTextOutput("[main]", 
+                "print path: " + std::to_string(count++), 10, BG);
+        for (auto node : this_local->shortest_path_)
+        {
+            std::cout << node << " -> ";
+        }
+        std::cout << "#" << std::endl;
+
+        this_local->is_path_updated_ = false;
+        pthread_mutex_unlock(&this_local->lock_);
+    }
+    
+    pthread_exit(NULL);
+}
+
 bool BiAstar::updatePath_()
 {
     shortest_path_.clear();
@@ -433,46 +482,6 @@ bool BiAstar::updatePath_()
     pthread_cond_signal(&cond_get_path_);
 
     return true;
-}
-
-std::shared_ptr<std::vector<std::vector<double>>> BiAstar::getDistanceMatrix()
-{
-    return std::make_shared<std::vector<std::vector<double>>>(distance_matrix_);
-};
-
-void BiAstar::solveRTSP_()
-{
-    double path_cost = 0;
-    std::shared_ptr<std::vector<int>> tmp_sequence;
-
-    if (is_connected_graph_ && is_distance_matrix_updated_)
-    {
-        if (!setting_.pseudo_mode)
-        {
-            std::tie(path_cost, tmp_sequence) = 
-            eci_gen_solver_.solveRTSP(getDistanceMatrix(),
-                source_tree_id_, target_tree_id_);
-        }
-        else
-        {
-            std::tie(path_cost, tmp_sequence) = 
-            eci_gen_solver_.solveDijkstra(getDistanceMatrix(),
-                source_tree_id_, target_tree_id_);
-        }
-        
-        // Update path and cost
-        if (path_cost < shortest_path_cost_)
-        {
-            sequence_of_tree_id_rtsp_ = tmp_sequence;
-            shortest_path_cost_ = path_cost;
-            updatePath_();
-            logData_();
-        }
-        else
-        {
-            bipedlab::debugger::debugColorOutput("Not found the shorter path than ", path_cost, 8);
-        }
-    }
 }
 
 void BiAstar::logData_()

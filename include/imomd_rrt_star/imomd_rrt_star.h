@@ -101,10 +101,12 @@ typedef struct tree
     // update the cost(path from root of tree) for node and its nested children
     std::vector<size_t> updateCost(size_t rewired_node, double new_cost)
     {
+        //初始化更新节点列表
         std::vector<size_t> updated_nodes;
+        // 初始化cost更新节点队列
         std::queue<size_t> nodes_need_cost_update;
+        //BFS节点相关的cost
         nodes_need_cost_update.push(rewired_node);
-
         while (!nodes_need_cost_update.empty())
         {
             size_t parent = nodes_need_cost_update.front();
@@ -113,6 +115,9 @@ typedef struct tree
 
             for (size_t child : children[parent])
             {
+               //更新当前节点的子节点的cost
+               // rewired_node的新cost +（子节点的cost-更新前的cost）
+               // 后面这一段就是rewired_node到子节点的cost
                 cost[child] = new_cost + cost[child] - cost[rewired_node];
                 nodes_need_cost_update.push(child);
             }
@@ -197,6 +202,9 @@ private:
     // Log
     std::chrono::steady_clock::time_point start_time_;
     CSVFile command_csv_;
+
+
+    bool checkAllTreesConnected();
 
     // Expand All Tree
     void expandTreeLayers_();

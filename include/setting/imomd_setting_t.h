@@ -36,13 +36,20 @@
 
 #include "rtsp_setting_t.h"
 
-typedef struct imomd_setting
-{
-    double goal_bias;
-    int max_iter;
-    int max_time;
-    bool random_seed;
-    bool pseudo_mode;
-    int log_data;
-    rtsp_setting_t rtsp_setting;
+typedef struct imomd_setting  
+{  
+    // 目标偏置,用于随机选择目标点的概率  
+    double goal_bias;  
+    // 最大迭代次数  
+    int max_iter;  
+    // 最大运行时间(秒)  
+    int max_time;  
+    // 是否使用随机种子  
+    bool random_seed;  
+    // 是否启用伪目标模式  
+    bool pseudo_mode;  
+    // 是否记录数据  
+    int log_data;  
+    // RTSP求解器设置  
+    rtsp_setting_t rtsp_setting;  
 } imomd_setting_t;

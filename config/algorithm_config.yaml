@@ -1,10 +1,10 @@
 general:
-  system: 1     # 0: IMOMD-RRT;  1: Bidirectional A*;  2: ANA*
+  system: 0     # 0: IMOMD-RRT;  1: Bidirectional A*;  2: ANA*
   pseudo: 0     # 0: real-objectives mode;  1: pseudo-objectives mode
   log_data: 1   # 0: don't log;             1: log data
   print_path: 1 # 0: don't print;           1: print path (sequence of node_id)
-  max_iter: 1000000
-  max_time: 5 # Sec
+  max_iter: 100000000
+  max_time: 2 # Sec
 
 rrt_params:
   goal_bias: 0.3 # 0.0 ~ 1.0
@@ -17,14 +17,19 @@ destinations:
   # target_id: 560879
 
   ## Seattle
-  source_id: 2
-  objective_ids: [2, 3, 4, 5, 6, 7, 8,9,10,11] # [2, 3, 4, 5, 6, 7, 8,9,10,11,12,13,14,15,16,17,187,28,29,30,100]
-  target_id: 1000
+  source_id: 55
+  # objective_ids: [2, 3, 4, 5, 6, 7, 8,9,10,11,12,13,14,15,16,17,187,28,29,30,100]
+  # objective_ids: [98, 12, 64]
+  objective_ids: []
+  target_id: 77
 
 map:
   type: 1 # < 0: customized map number; 0: customized graph, 1: osm
   path:  /mnt/d/Projects/IMOMD-RRTStar/osm_data/
-  name: sanf.osm # seattle.osm
+  name: 黄渡电厂小地图.osm #休斯顿网格街区.osm #sanf.osm # seattle.osm
+  # name: sanf.osm # seattle.osm
+show:
+  edge: 0 #是否输出边
 
 rtsp_settings:
   shortcut: 1  # 0: No Execute,  1: Execute

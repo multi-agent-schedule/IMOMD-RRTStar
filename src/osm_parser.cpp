@@ -89,7 +89,15 @@ void OSMParser::createWays_(tinyxml2::XMLHandle* h_root_way, tinyxml2::XMLHandle
         
         nodes_map_.insert({node_id, location_tmp});
     }
-
+    for (const auto& pair : nodes_map_) {
+        size_t id = pair.first;
+        const location_t& loc = pair.second;
+        
+        std::cout << "Id: " << id << '\n' 
+                << "Latitude: " << loc.latitude << '\n'  
+                << "Longitude: " << loc.longitude << '\n'
+                << '\n';
+    }
     ways_.clear();
     tinyxml2::XMLElement* way_element = h_root_way->ToElement();
     osm_way_t way_tmp;
